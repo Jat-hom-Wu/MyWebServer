@@ -22,7 +22,7 @@
 #include <map>
 
 #include "../locker/locker.h"
-//#include "../CGImysql/sql_connection_pool.h"
+#include "../sql_conn/sqlconn.h"
 #include"mysql/mysql.h"
 
 

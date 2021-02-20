@@ -23,20 +23,37 @@ void WebServer::init(int port , std::string user, std::string passWord,std::stri
               int log_write , int opt_linger, int trigmode, int sql_num,
               int thread_num, int close_log, int actor_model)
               {
-                  //chu shi hua fu zhi
+                  //初始化赋值
+                    m_port = port;
+                    m_user = user;
+                    m_passWord = passWord;
+                    m_databaseName = databaseName;
+                    m_sql_num = sql_num;
+                    m_thread_num = thread_num;
+                    m_log_write = log_write;
+                    m_OPT_LINGER = opt_linger;
+                    m_TRIGMode = trigmode;
+                    m_close_log = close_log;
+                    m_actormodel = actor_model;
               }
+
+void WebServer::sql_pool()
+{
+    m_connPool = connection_pool::GetInstance();        //单例模式获得一个对象
+    m_connPool->init("localhost", m_user, m_passWord, m_databaseName, 3306, m_sql_num, m_close_log);
+
+    //初始化数据库读取表
+    //users->initmysql_result(m_connPool);
+}
 
 void WebServer::thread_pool()
 {
     m_pool = new ThreadPoll<json_conn>;
-    m_pool->ThreadCreate(5,10);
-}
-
-void WebServer::sql_pool()
-{
+    m_pool->ThreadCreate(8,100,m_connPool);
+    
+    m_pool->m_connPool = m_connPool;
 
 }
-
 
 void WebServer::eventListen()
 {

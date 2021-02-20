@@ -186,6 +186,12 @@ bool json_conn::mywrite()
 
 int json_conn::process_read()               //identify function
 {
+    char sql_insert[2500]; 
+    memset(sql_insert, '\0', sizeof(sql_insert));
+    
+    sprintf(sql_insert, "INSERT INTO NewNum values ('%s', 'YIBUtest');", m_read_buf );
+    int flag =  mysql_query(mysql, sql_insert);
+    std::cout<<"flag: "<<flag<<std::endl;
     return 2;
 }
 

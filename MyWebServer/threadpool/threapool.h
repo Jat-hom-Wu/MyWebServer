@@ -8,6 +8,8 @@
 #include"../locker/locker.h"
 #include"stdio.h"
 #include"unistd.h"
+#include"../sql_conn/sqlconn.h"
+
 
 
 template <typename T>
@@ -20,10 +22,13 @@ class ThreadPoll{
     locker m_queuelocker;       //保护请求队列的互斥锁
     sem m_queuestat;            //是否有任务需要处理
 
-    void ThreadCreate(int thread_nums, int max_request);
+
+    void ThreadCreate(int thread_nums, int max_request, connection_pool *connPool);
     bool Addrequest(T * request);
     static  void* work(void *arg);
     ~ThreadPoll();
+
+        connection_pool *m_connPool ; 
 };
 
 class doing{                                //task object
@@ -49,8 +54,12 @@ class doing{                                //task object
 
 };
 
+
 template<typename T>
-void ThreadPoll<T>::ThreadCreate(int thread_nums,int max_request){
+void ThreadPoll<T>::ThreadCreate(int thread_nums,int max_request,  connection_pool *connPool) 
+{
+    m_connPool = connPool;
+
     //error fixing
     m_thread_nums = thread_nums;
     m_max_request = max_request;
@@ -102,8 +111,8 @@ void* ThreadPoll<T>::work(void *arg){
             poll->m_taskqueue.pop_front();
             poll->m_queuelocker.unlock();
             if(!TheTask)     continue;
+            connectionRAII mysqlcon(&TheTask->mysql, poll->m_connPool);             //???
             TheTask->process();
-            //std::cout<<"process test"<<std::endl;
             
         }
 }

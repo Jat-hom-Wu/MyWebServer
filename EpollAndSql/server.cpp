@@ -103,7 +103,7 @@ int main(int argc, char *argv[])
 
                     write(STDOUT_FILENO, buf, n);
                     char sql_insert[200]; 
-                    sprintf(sql_insert, "REPLACE INTO NewNum values ('%s', 'ZHXF');", buf );
+                    sprintf(sql_insert, "INSERT INTO NewNum values ('%s', 'ZHXF');", buf );
                     int flag =  mysql_query(con, sql_insert);
                     std::cout<<"flag: "<<flag<<std::endl;
                     write(sockfd, buf, n);

@@ -12,7 +12,7 @@
 #include <cassert>
 #include <sys/epoll.h>
 #include<string>
-
+#include"./sql_conn/sqlconn.h"
 #include "./threadpool/threapool.h"
 #include "./conection/connet.h"
 
@@ -57,7 +57,7 @@ public:
     json_conn *users;
 
     //数据库相关
-    //connection_pool *m_connPool;
+    connection_pool *m_connPool;
     std::string m_user;         //登陆数据库用户名
     std::string m_passWord;     //登陆数据库密码
     std::string m_databaseName; //使用数据库名
