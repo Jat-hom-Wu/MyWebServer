@@ -1,6 +1,66 @@
 #include"connet.h"
 #include<string>
 #include<iostream>
+#include<json/json.h>
+
+struct HardWareData
+{
+    int code;
+    int time;
+    int co2;
+    int co;
+    int temperature;
+    int no2;
+    int no;
+
+    // char code[30];
+    // char time[30];
+    // char co2[10];
+    // char co[10];
+    // char temperature[10];
+    // char no2[10];
+    // char no[10];
+};  
+
+HardWareData GetTheHardwareData(const std::string& strJson){
+    Json::Reader reader;
+    Json::Value value;
+	HardWareData data;
+	//memset(&data,0,sizeof(data));
+	
+    if (reader.parse(strJson, value)){
+        data.code = value["code"].asInt();
+        data.time = value["time"].asInt();
+        data.co2 = value["co2"].asInt();
+        data.temperature = value["temper"].asInt();
+        data.no2 = value["no2"].asInt();
+        data.no = value["no"].asInt();
+        data.co = value["co"].asInt();
+
+        // strcpy(data.code,value["code"].asString().c_str());
+        // strcpy(data.time,value["time"].asString().c_str());
+        // strcpy(data.co2,value["co2"].asString().c_str());
+        // strcpy(data.temperature,value["temper"].asString().c_str());
+        // strcpy(data.no2,value["no2"].asString().c_str());
+        // strcpy(data.no,value["no"].asString().c_str());
+        // strcpy(data.co,value["co"].asString().c_str());
+	}
+	return data;
+}
+
+int GetTheUser(const std::string& strJson){
+	Json::Reader reader;
+    Json::Value value;
+	int result = -1;
+	//memset(&student,0,sizeof(Student));
+	
+    if (reader.parse(strJson, value)){
+        result = value["user"].asInt();
+	}
+	return result;
+}
+
+
 
 //对文件描述符设置非阻塞
 int setnonblocking(int fd)
@@ -109,11 +169,12 @@ void json_conn::close_conn(bool real_close )
     
 bool json_conn::read_once()
 {
-    if (m_read_idx >= READ_BUFFER_SIZE)
-    {
-        return false;
-    }
+    // if (m_read_idx >= READ_BUFFER_SIZE)
+    // {
+    //     return false;
+    // }
     int bytes_read = 0;
+     memset(m_read_buf, '\0', sizeof(m_read_buf));
 
     //LT读取数据
         bytes_read = recv(m_sockfd, m_read_buf , READ_BUFFER_SIZE , 0);
@@ -186,13 +247,30 @@ bool json_conn::mywrite()
 
 int json_conn::process_read()               //identify function
 {
+    std::string RecvTostring = m_read_buf;
+    int ThisUser = GetTheUser(RecvTostring);
+    if(ThisUser == 0)
+    {
     char sql_insert[2500]; 
     memset(sql_insert, '\0', sizeof(sql_insert));
     
-    sprintf(sql_insert, "INSERT INTO NewNum values ('%s', 'YIBUtest');", m_read_buf );
+     HardWareData hardwaredata = GetTheHardwareData(RecvTostring);
+
+    sprintf(sql_insert, "INSERT INTO HardwareList values ('%d' ,  '%d' , '%d' , '%d' , '%d' , '%d' , '%d');" , hardwaredata.code,
+    hardwaredata.time,
+    hardwaredata.temperature,
+    hardwaredata.co2,
+    hardwaredata.co,
+    hardwaredata.no,
+    hardwaredata.no2 );
     int flag =  mysql_query(mysql, sql_insert);
-    std::cout<<"flag: "<<flag<<std::endl;
-    return 2;
+    std::cout<<"insert into mysql : "<<flag<<std::endl;
+    return 1;
+    }
+    else {
+        std:cout<<"This User != 0"<<std::endl;
+        return 2;
+    }
 }
 
 bool json_conn::process_write(int ret)              //identify function

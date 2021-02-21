@@ -19,7 +19,7 @@
 //#define SERV_PORT 8000
 #define SERV_PORT 8080
 
-int Gettime()
+ int Gettime()
 {
     using namespace std;
     using std::chrono::system_clock;
@@ -27,10 +27,10 @@ int Gettime()
     auto now = system_clock::now();
     auto now_c = system_clock::to_time_t(now);
     ostringstream ss;
-    ss << put_time(localtime(&now_c), "%Y%m%d%H%M");
+    ss << put_time(localtime(&now_c), "%m%d%H%M");
     string timeid = ss.str();
     
-    int a;
+     int a;
     stringstream sa;
     sa << timeid;
     sa >> a;
@@ -63,6 +63,7 @@ int main(int argc, char *argv[])
     int i=20;
 
     int ThisCode = GetCode();
+    std::cout<<"The HardWareCode: "<<ThisCode<<std::endl;
 
 
     Json::Value root;
@@ -74,6 +75,8 @@ int main(int argc, char *argv[])
    // inet_pton(AF_INET, "121.5.140.194", &servaddr.sin_addr);
    inet_pton(AF_INET, "127.0.0.1", &servaddr.sin_addr);
     servaddr.sin_port = htons(SERV_PORT);
+
+
 
     connect(sockfd, (struct sockaddr *)&servaddr, sizeof(servaddr));
 
@@ -92,10 +95,9 @@ int main(int argc, char *argv[])
         std::string send_buff = root.toStyledString();
 	    char str2[2000];	
 	    strcpy(str2,send_buff.c_str());
-        
-        std::cout<<str2<<std::endl;
+        std::cout<<"send success"<<std::endl;
 
-        write(sockfd, str2, strlen(buf));
+        write(sockfd, str2, strlen(str2));
 
         sleep(5);
 

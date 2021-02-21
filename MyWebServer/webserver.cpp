@@ -101,7 +101,6 @@ void WebServer::dealwithread(int sockfd)
 
             //若监测到读事件，将该事件放入请求队列
             m_pool->Addrequest(users + sockfd);             //什么语法？？ //数组首地址+sockfd确定缓冲区地址
-            
         }
         else
         {
@@ -186,7 +185,7 @@ void WebServer::eventLoop()
             else if (events[i].events & (EPOLLRDHUP | EPOLLHUP | EPOLLERR))
             {
                 //服务器端关闭连接，移除对应的定时器
-                std::cout<<"timer error"<<std::endl;
+                std::cout<<"timer error"<<", The Client closed"<<std::endl;
 
                 //增加移除节点
         
@@ -194,6 +193,7 @@ void WebServer::eventLoop()
             //处理信号
             else if ((sockfd == m_pipefd[0]) && (events[i].events & EPOLLIN))
             {
+
                 std::cout<<"handler the signal"<<std::endl;
             }
             //处理客户连接上接收到的数据
