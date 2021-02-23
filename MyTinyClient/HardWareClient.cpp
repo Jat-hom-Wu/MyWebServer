@@ -99,7 +99,7 @@ int main(int argc, char *argv[])
 
         write(sockfd, str2, strlen(str2));
 
-        sleep(5);
+        sleep(30);
 
     }
     close(sockfd);

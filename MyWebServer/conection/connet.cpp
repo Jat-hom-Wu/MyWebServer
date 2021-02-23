@@ -60,6 +60,18 @@ int GetTheUser(const std::string& strJson){
 	return result;
 }
 
+void json_conn::GetThePCData(const std::string& strJson)
+{
+    	Json::Reader reader;
+        Json::Value value;
+
+         if (reader.parse(strJson, value)){
+         m_PcCode = value["code"].asInt();
+         m_FirstTime = value["FirstTime"].asInt();
+         m_SecondTime = value["SecondTime"].asInt();
+	}
+}
+
 
 
 //对文件描述符设置非阻塞
@@ -183,7 +195,8 @@ bool json_conn::read_once()
         // if (bytes_read <= 0)
          if (bytes_read < 0)
         {
-            std::cout<<"LT读取数据失败"<<std::endl;
+            //std::cout<<"LT读取数据失败"<<std::endl;
+            std::cout<<"bytes_read: "<<bytes_read<<std::endl;
             return false;
         }
         return true;
@@ -202,9 +215,8 @@ bool json_conn::mywrite()
     // }
                    
                 //std::cout<<"write test"<<std::endl;
-                     write(STDOUT_FILENO,m_read_buf, m_read_idx);
-                    //write(m_sockfd, m_read_buf+m_read_idx, m_read_idx);
-                    
+                    // write(STDOUT_FILENO,m_read_buf, m_read_idx);
+                    write(m_sockfd, m_write_buf, strlen(m_write_buf));
                     return true;
 
     // while (1)
@@ -264,12 +276,19 @@ int json_conn::process_read()               //identify function
     hardwaredata.no,
     hardwaredata.no2 );
     int flag =  mysql_query(mysql, sql_insert);
-    std::cout<<"insert into mysql : "<<flag<<std::endl;
+    //std::cout<<"insert into mysql : "<<flag<<std::endl;
     return 1;
     }
-    else {
-        std:cout<<"This User != 0"<<std::endl;
+    else if(ThisUser == 1)
+    {
+        GetThePCData(RecvTostring);
+
+        std::cout<<"deal with the pc client"<<std::endl;
         return 2;
+    }
+    else{
+        std::cout<<"The user is error"<<std::endl;
+        return 3;
     }
 }
 
@@ -278,14 +297,49 @@ bool json_conn::process_write(int ret)              //identify function
     int temp = ret;
     temp =0;
     
-   for (int i = 0; i < m_read_idx; i++)
-    m_read_buf[i] = toupper(m_read_buf[i]); 
+//    for (int i = 0; i < m_read_idx; i++)
+//     m_read_buf[i] = toupper(m_read_buf[i]); 
 
-    
-    // m_iv[0].iov_base = m_read_buf+m_read_idx;
-    // m_iv[0].iov_len = m_read_idx;
-    // m_iv_count = 1;
-    // bytes_to_send = m_read_idx;
+                    char sql_insert[200]; 
+                    sprintf(sql_insert, "select * from HardwareList where time  between '%d' and '%d' and HWcode ='%d';", m_FirstTime,
+                    m_SecondTime,
+                     m_PcCode );
+
+
+     if (mysql_query(mysql, sql_insert))
+    {
+        std::cout<<"process write mysql connection error"<<std::endl;
+    }
+    //从表中检索完整的结果集
+    MYSQL_RES *result = mysql_store_result(mysql);
+    //返回结果集中的列数
+    int num_fields = mysql_num_fields(result);
+
+    Json::Value root;
+    Json::Value datasheet;
+    Json::Value try1;
+    datasheet["fields"] = num_fields;
+
+    //从结果集中获取下一行，将对应的用户名和密码，存入map中
+    while (MYSQL_ROW row = mysql_fetch_row(result))
+    {
+        root["code"] = row[0];
+        root["time"] = row[1];                            
+        root["temper"] = row[2];
+        root["co2"] =  row[3];
+        root["co"] =  row[4];
+        root["no2"] =  row[5];
+        root["no"] = row[6];
+        try1.append(root);
+    }
+    datasheet["data"] = try1;
+
+    datasheet.toStyledString();
+
+    std::string send_buf = datasheet.toStyledString();
+    memset(m_write_buf, '\0', WRITE_BUFFER_SIZE);
+    strcpy(m_write_buf,send_buf.c_str());
+
     return true;
 }
 

@@ -104,7 +104,7 @@ void WebServer::dealwithread(int sockfd)
         }
         else
         {
-            std::cout<<"read once error "<<std::endl;
+            std::cout<<"none data now "<<std::endl;
         }
  }
 
@@ -146,7 +146,7 @@ bool WebServer::dealclinetdata()
     event.events = EPOLLIN | EPOLLRDHUP;
     event.events |= EPOLLONESHOT;
     epoll_ctl(m_epollfd, EPOLL_CTL_ADD, connfd, &event);
-    setnonblocking(connfd);
+    //setnonblocking(connfd);                           //设置非阻塞
 
         // timer(connfd, client_address);
     users[connfd].init(connfd, client_address, m_root, m_CONNTrigmode, m_close_log, m_user, m_passWord, m_databaseName);

@@ -44,6 +44,7 @@ public:
     void process();
     bool read_once();
     bool mywrite();
+    void GetThePCData(const std::string& strJson);
     sockaddr_in *get_address()
     {
         return &m_address;
@@ -74,6 +75,10 @@ public:
     static int m_user_count;
     MYSQL *mysql;
     int m_state;  //读为0, 写为1
+
+    int m_PcCode;
+    int m_FirstTime;
+    int m_SecondTime;
 
 private:
     int m_sockfd;
